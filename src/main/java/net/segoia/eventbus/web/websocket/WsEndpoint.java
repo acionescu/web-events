@@ -28,6 +28,7 @@ import javax.websocket.Session;
 import net.segoia.event.eventbus.Event;
 
 public abstract class WsEndpoint {
+    
     /**
      * We will use a fixed thread pool to send events to all websocket connected peers
      */
@@ -72,7 +73,6 @@ public abstract class WsEndpoint {
 	    }
 
 	});
-
     }
 
     public void terminate() {

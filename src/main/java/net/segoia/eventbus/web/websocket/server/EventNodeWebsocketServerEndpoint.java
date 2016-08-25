@@ -16,6 +16,12 @@
  */
 package net.segoia.eventbus.web.websocket.server;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -31,10 +37,27 @@ import net.segoia.eventbus.web.websocket.WsEndpoint;
 public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
     private WebsocketServerEventNode localNode;
 
+    private ScheduledExecutorService scheduler = (ScheduledExecutorService) Executors
+	    .newSingleThreadScheduledExecutor();
+
+    private long lastReceivedEventTs;
+    
+    private long lastSentEventTs;
+
+    private Runnable connectionChecker;
+
+    private ScheduledFuture<?> connectionCheckerFuture;
+
+    private long connectionCheckPeriod = 35000;
+    
+    private long maxAllowedInactivity = 30000;
+
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
 	setUp(session, config);
 	state = CONNECTED;
+
+	connectionCheckerFuture = scheduleTask(connectionChecker, connectionCheckPeriod);
 	sendConnectedEvent();
 
     }
@@ -42,6 +65,9 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
     @OnClose
     public void onClose(Session session) {
 	System.out.println("terminating node");
+	if (connectionCheckerFuture != null) {
+	    connectionCheckerFuture.cancel(true);
+	}
 	localNode.terminate();
     }
 
@@ -58,8 +84,12 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
     @OnError
     public void onError(Throwable t) {
 	System.err.println("Terminating node " + getLocalNodeId() + " due to error ");
-	t.printStackTrace();
+	if (connectionCheckerFuture != null) {
+	    connectionCheckerFuture.cancel(true);
+	}
 	localNode.terminate();
+	t.printStackTrace();
+	
     }
 
     /**
@@ -71,6 +101,22 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
     protected void setUp(Session session, EndpointConfig config) {
 	this.session = session;
 	localNode = buildLocalNode();
+
+	connectionChecker = () -> {
+	    long now = System.currentTimeMillis();
+	    long inactivityPeriod = now - lastReceivedEventTs;
+	    long replyInactivity = now- lastSentEventTs; 
+	    
+	    if (inactivityPeriod >= maxAllowedInactivity || replyInactivity >= maxAllowedInactivity) {
+		try {
+		    /* send a ping event */
+		    sendEvent(new PingEvent());
+		} catch (Exception e) {
+		    /* doesn't matter */
+		}
+	    }
+
+	};
     }
 
     protected Event buildEventFromMessage(String message) {
@@ -83,6 +129,7 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
      * @param event
      */
     protected void onEvent(Event event) {
+	lastReceivedEventTs = System.currentTimeMillis();
 	/* by default delegate this to the current state */
 	state.handleEvent(event, this);
     }
@@ -92,6 +139,21 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
 	event.addParam(EventParams.clientId, localNode.getId());
 
 	sendEvent(event);
+    }
+
+    protected ScheduledFuture<?> scheduleTask(Runnable runnable, long delay) {
+	return scheduler.scheduleAtFixedRate(runnable,delay, delay, TimeUnit.MILLISECONDS);
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see net.segoia.eventbus.web.websocket.WsEndpoint#sendEvent(net.segoia.event.eventbus.Event)
+     */
+    @Override
+    public Future<Void> sendEvent(Event event) {
+	lastSentEventTs = System.currentTimeMillis();
+	return super.sendEvent(event);
     }
 
     protected abstract WebsocketServerEventNode buildLocalNode();

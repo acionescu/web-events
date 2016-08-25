@@ -1,4 +1,4 @@
-#Intro
+#Description
 
 This is an extension to the [even-bus framework](https://github.com/acionescu/event-bus), that allows the transmission of events over websockets
 

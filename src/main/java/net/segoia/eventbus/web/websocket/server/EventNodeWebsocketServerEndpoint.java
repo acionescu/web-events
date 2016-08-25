@@ -48,9 +48,9 @@ public abstract class EventNodeWebsocketServerEndpoint extends WsEndpoint {
 
     private ScheduledFuture<?> connectionCheckerFuture;
 
-    private long connectionCheckPeriod = 35000;
+    protected long connectionCheckPeriod = 35000;
     
-    private long maxAllowedInactivity = 30000;
+    protected long maxAllowedInactivity = 30000;
 
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {

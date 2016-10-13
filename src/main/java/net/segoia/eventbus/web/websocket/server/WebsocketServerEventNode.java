@@ -31,14 +31,14 @@ import net.segoia.event.eventbus.peers.EventRelay;
 
 public abstract class WebsocketServerEventNode extends AgentNode {
 
-    private EventNodeWebsocketServerEndpoint ws;
+    private AbstractEventNodeWebsocketServerEndpoint ws;
 
     /**
      * Keep a separate bus to handle events coming from the ws client
      */
     protected FilteringEventBus wsEventsBus;
 
-    public WebsocketServerEventNode(EventNodeWebsocketServerEndpoint ws) {
+    public WebsocketServerEventNode(AbstractEventNodeWebsocketServerEndpoint ws) {
 	/* we don't want the agent to autoinitialize, we will do it */
 	super(false);
 	this.ws = ws;
@@ -73,7 +73,7 @@ public abstract class WebsocketServerEventNode extends AgentNode {
     protected void registerHandlers() {
 	super.registerHandlers();
 	/* register a generic handler that will send all received events to the websocket endpoint */
-	addEventHandler((c) -> this.handleServerEvent(c.getEvent()));
+	addEventHandler((c) -> this.handleServerEvent(c.getEvent()),9999);
     }
 
     /**

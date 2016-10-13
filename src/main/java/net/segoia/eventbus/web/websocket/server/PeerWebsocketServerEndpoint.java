@@ -16,10 +16,28 @@
  */
 package net.segoia.eventbus.web.websocket.server;
 
-import net.segoia.eventbus.web.websocket.WsEndpointState;
+import javax.websocket.server.ServerEndpoint;
 
-public abstract class WsServerEndpointState extends WsEndpointState<AbstractEventNodeWebsocketServerEndpoint> {
+/**
+ * This class defines a websocket endpoint that will receive client connections from other peers
+ * It will allow to pass events between the nodes from this instance and the ones from the client instance
+ * @author adi
+ *
+ */
 
-    
+@ServerEndpoint(value = "/ws/peer")
+public class PeerWebsocketServerEndpoint extends EventNodeWebsocketServerEndpoint{
+
+    @Override
+    protected WebsocketServerEventNode buildLocalNode() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    protected void initLocalNode(WebsocketServerEventNode localNode) {
+	// TODO Auto-generated method stub
+	
+    }
 
 }

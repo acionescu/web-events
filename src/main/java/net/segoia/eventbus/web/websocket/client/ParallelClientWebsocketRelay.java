@@ -55,12 +55,14 @@ public class ParallelClientWebsocketRelay extends EventRelay {
      */
     @Override
     protected void start() {
-	WebSocketContainer wsContainer = ContainerProvider.getWebSocketContainer();
-	try {
-	    wsContainer.connectToServer(ws, uri);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+//	WebSocketContainer wsContainer = ContainerProvider.getWebSocketContainer();
+//	try {
+//	    wsContainer.connectToServer(ws, uri);
+//	} catch (Exception e) {
+//	    e.printStackTrace();
+//	}
+	
+	ws.connect(uri);
     }
 
     @Override
@@ -89,6 +91,11 @@ public class ParallelClientWebsocketRelay extends EventRelay {
 	peerRelay.onRemoteEvent(event);
     }
     
-    
+    /**
+     * Called when ws closed due to error or by the other end
+     */
+    public void onWsClosed() {
+	
+    }
 
 }

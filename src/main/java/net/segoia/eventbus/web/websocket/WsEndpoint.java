@@ -18,10 +18,11 @@ package net.segoia.eventbus.web.websocket;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.Session;
 
@@ -32,7 +33,7 @@ public abstract class WsEndpoint {
     /**
      * We will use a fixed thread pool to send events to all websocket connected peers
      */
-    private static ExecutorService sendThreadPool = Executors.newFixedThreadPool(10, new ThreadFactory() {
+    private static ScheduledExecutorService sendThreadPool = Executors.newScheduledThreadPool(10, new ThreadFactory() {
 
 	@Override
 	public Thread newThread(Runnable r) {
@@ -73,6 +74,14 @@ public abstract class WsEndpoint {
 	    }
 
 	});
+    }
+    
+    protected Future<Void> submitTask(Callable<Void> task){
+	return sendThreadPool.submit(task);
+    }
+    
+    protected Future<Void> scheduleTask(Callable<Void> task, long delay){
+	return sendThreadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
     }
 
     public void terminate() {

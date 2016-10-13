@@ -30,6 +30,12 @@ import net.segoia.event.eventbus.peers.EventRelay;
  */
 public class ParallelWebsocketClientNode extends AgentNode {
     private URI uri;
+    
+    
+
+    public ParallelWebsocketClientNode() {
+	super();
+    }
 
     public ParallelWebsocketClientNode(URI uri) {
 	super();
@@ -46,7 +52,7 @@ public class ParallelWebsocketClientNode extends AgentNode {
 
     @Override
     protected void nodeConfig() {
-	/* make sure we set autorelay enabled, otherwise all events coming from the websocket will be blocked by default */
+	/* make sure we set autorelay enabled, oParallelWebsocketClientNodetherwise all events coming from the websocket will be blocked by default */
 	config.setAutoRelayEnabled(true);
 	/* let the client send anything */
 	config.setDefaultRequestedEvents(new TrueCondition());
@@ -65,7 +71,7 @@ public class ParallelWebsocketClientNode extends AgentNode {
 
     @Override
     protected void onTerminate() {
-	// TODO Auto-generated method stub
+	
 	
     }
 

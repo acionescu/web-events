@@ -16,10 +16,16 @@
  */
 package net.segoia.eventbus.web.websocket.server;
 
-import net.segoia.eventbus.web.websocket.WsEndpointState;
+public class PeerServerNode extends WebsocketServerEventNode{
 
-public abstract class WsServerEndpointState extends WsEndpointState<AbstractEventNodeWebsocketServerEndpoint> {
+    public PeerServerNode(EventNodeWebsocketServerEndpoint ws) {
+	super(ws);
+    }
 
-    
+    @Override
+    protected void onTerminate() {
+	// TODO Auto-generated method stub
+	
+    }
 
 }

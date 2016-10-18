@@ -16,13 +16,35 @@
  */
 package net.segoia.eventbus.web.websocket.server;
 
+import javax.websocket.EndpointConfig;
 import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
 
 import net.segoia.event.eventbus.Event;
 
 public abstract class EventNodeWebsocketServerEndpoint extends AbstractEventNodeWebsocketServerEndpoint{
     
     
+    
+    
+    @OnOpen
+    public void onOpen(Session session, EndpointConfig config) {
+	super.onOpen(session, config);
+    }
+
+    @Override
+    protected WebsocketServerEventNode buildLocalNode() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    protected void initLocalNode(WebsocketServerEventNode localNode) {
+	// TODO Auto-generated method stub
+	
+    }
+
     @OnMessage
     public void onMessage(String message) {
 	try {

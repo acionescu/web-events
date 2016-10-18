@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
-import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
@@ -61,7 +60,6 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
     
     protected long maxAllowedInactivity = 30000;
 
-    @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
 	setUp(session, config);
 	state = CONNECTED;

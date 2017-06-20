@@ -39,17 +39,17 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 
     private ScheduledExecutorService scheduler = (ScheduledExecutorService) Executors
 	    .newSingleThreadScheduledExecutor(new ThreadFactory() {
-	        
-	        @Override
-	        public Thread newThread(Runnable r) {
-	            Thread t = Executors.defaultThreadFactory().newThread(r);
-	            t.setDaemon(true);
-	            return t;
-	        }
+
+		@Override
+		public Thread newThread(Runnable r) {
+		    Thread t = Executors.defaultThreadFactory().newThread(r);
+		    t.setDaemon(true);
+		    return t;
+		}
 	    });
 
     private long lastReceivedEventTs;
-    
+
     private long lastSentEventTs;
 
     private Runnable connectionChecker;
@@ -57,7 +57,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
     private ScheduledFuture<?> connectionCheckerFuture;
 
     protected long connectionCheckPeriod = 35000;
-    
+
     protected long maxAllowedInactivity = 30000;
 
     public void onOpen(Session session, EndpointConfig config) {
@@ -86,7 +86,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 	}
 	localNode.terminate();
 	t.printStackTrace();
-	
+
     }
 
     /**
@@ -102,8 +102,8 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 	connectionChecker = () -> {
 	    long now = System.currentTimeMillis();
 	    long inactivityPeriod = now - lastReceivedEventTs;
-	    long replyInactivity = now- lastSentEventTs; 
-	    
+	    long replyInactivity = now - lastSentEventTs;
+
 	    if (inactivityPeriod >= maxAllowedInactivity || replyInactivity >= maxAllowedInactivity) {
 		try {
 		    /* send a ping event */
@@ -139,12 +139,12 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
     }
 
     protected ScheduledFuture<?> scheduleTask(Runnable runnable, long delay) {
-	return scheduler.scheduleAtFixedRate(runnable,delay, delay, TimeUnit.MILLISECONDS);
+	return scheduler.scheduleAtFixedRate(runnable, delay, delay, TimeUnit.MILLISECONDS);
     }
-    
-    
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.segoia.eventbus.web.websocket.WsEndpoint#sendEvent(net.segoia.event.eventbus.Event)
      */
     @Override
@@ -213,7 +213,23 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 
 	@Override
 	public void handleEvent(Event event, AbstractEventNodeWebsocketServerEndpoint wse) {
-	    wse.localNode.onWsEvent(event);
+	    boolean process = handleSpecialEvent(event, wse);
+	    if (process) {
+		wse.localNode.onWsEvent(event);
+	    }
+	}
+
+	private boolean handleSpecialEvent(Event event, AbstractEventNodeWebsocketServerEndpoint wse) {
+	    String et = event.getEt();
+	    boolean processFurther = true;
+	    switch (et) {
+	    case "EBUS:PEER:PING":
+		wse.sendEvent(new Event("EBUS:PEER:PONG"));
+		processFurther = false;
+		break;
+	    }
+
+	    return processFurther;
 	}
     };
 

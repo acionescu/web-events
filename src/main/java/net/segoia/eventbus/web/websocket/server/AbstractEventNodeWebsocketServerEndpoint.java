@@ -162,12 +162,15 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 
     @Override
     public void onAccepted() {
-	state = ACCEPTED;
-
-	sendAuthenticated();
-	/* now we can init the local node */
+	/* first init local node */
 
 	initLocalNode(localNode);
+	
+	/* then send the accepted event */
+	
+	state = ACCEPTED;
+	sendAuthenticated();
+	
 
     }
 

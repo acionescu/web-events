@@ -19,8 +19,19 @@ package net.segoia.eventbus.web.websocket;
 import net.segoia.event.eventbus.Event;
 
 public abstract class WsEndpointState<W extends WsEndpoint> {
+    private String name;
+
+    public WsEndpointState(String name) {
+	super();
+	this.name = name;
+    }
 
     public abstract void handleEvent(Event event, W wse);
+
+    @Override
+    public String toString() {
+	return name;
+    }
 
     
 }

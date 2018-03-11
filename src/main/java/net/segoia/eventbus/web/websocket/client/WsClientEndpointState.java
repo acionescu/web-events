@@ -20,4 +20,8 @@ import net.segoia.eventbus.web.websocket.WsEndpointState;
 
 public abstract class WsClientEndpointState extends WsEndpointState<EventNodeWebsocketClientEndpoint>{
 
+    public WsClientEndpointState(String name) {
+	super(name);
+    }
+
 }

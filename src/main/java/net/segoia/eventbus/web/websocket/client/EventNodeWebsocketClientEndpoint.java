@@ -144,7 +144,7 @@ public class EventNodeWebsocketClientEndpoint extends WsEndpoint {
 	sendEvent(event);
     }
 
-    public static WsClientEndpointState ACCEPTED = new WsClientEndpointState() {
+    public static WsClientEndpointState ACCEPTED = new WsClientEndpointState("ACCEPTED") {
 
 	@Override
 	public void handleEvent(Event event, EventNodeWebsocketClientEndpoint wse) {
@@ -166,7 +166,7 @@ public class EventNodeWebsocketClientEndpoint extends WsEndpoint {
 	}
     };
 
-    public static WsClientEndpointState WAIT_CONNECTED = new WsClientEndpointState() {
+    public static WsClientEndpointState WAIT_CONNECTED = new WsClientEndpointState("WAIT_CONNECTED") {
 
 	@Override
 	public void handleEvent(Event event, EventNodeWebsocketClientEndpoint wse) {
@@ -183,7 +183,7 @@ public class EventNodeWebsocketClientEndpoint extends WsEndpoint {
 	}
     };
 
-    public static WsClientEndpointState WAIT_AUTH_RESPONSE = new WsClientEndpointState() {
+    public static WsClientEndpointState WAIT_AUTH_RESPONSE = new WsClientEndpointState("WAIT_AUTH_RESPONSE") {
 
 	@Override
 	public void handleEvent(Event event, EventNodeWebsocketClientEndpoint wse) {

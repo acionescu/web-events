@@ -17,6 +17,8 @@
 package net.segoia.eventbus.web.websocket.server;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import net.segoia.event.conditions.TrueCondition;
 import net.segoia.event.eventbus.AsyncEventTracker;
@@ -85,6 +87,14 @@ public abstract class WebsocketServerEventNode extends AgentNode {
     protected EventTracker handleServerEvent(Event event) {
 	Future<Void> future = ws.sendEvent(event);
 	return new AsyncEventTracker(future, true);
+    }
+    
+    protected ScheduledFuture<?> scheduleTask(Runnable runnable, long delay) {
+	return ws.scheduleTask(runnable, delay);
+    }
+    
+    protected ScheduledFuture<?> scheduleOneTimeTask(Runnable runnable, long delay){
+	return ws.scheduleOneTimeTask(runnable, delay);
     }
 
     @Override

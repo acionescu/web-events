@@ -26,19 +26,19 @@ import java.util.concurrent.TimeUnit;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
-import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.constants.EventParams;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.eventbus.web.websocket.WsEndpoint;
+import net.segoia.eventbus.web.websocket.WsEndpointState;
 
 public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoint {
     private WebsocketServerEventNode localNode;
 
-    private ScheduledExecutorService scheduler = (ScheduledExecutorService) Executors
-	    .newSingleThreadScheduledExecutor(new ThreadFactory() {
+    private static ScheduledExecutorService scheduler = (ScheduledExecutorService) Executors
+	    .newScheduledThreadPool(5, new ThreadFactory() {
 
 		@Override
 		public Thread newThread(Runnable r) {
@@ -62,7 +62,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 
     public void onOpen(Session session, EndpointConfig config) {
 	setUp(session, config);
-	state = CONNECTED;
+	gotoState(CONNECTED);
 
 	connectionCheckerFuture = scheduleTask(connectionChecker, connectionCheckPeriod);
 	sendConnectedEvent();
@@ -142,6 +142,10 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 	return scheduler.scheduleAtFixedRate(runnable, delay, delay, TimeUnit.MILLISECONDS);
     }
 
+    protected ScheduledFuture<?> scheduleOneTimeTask(Runnable runnable, long delay){
+	return scheduler.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -159,6 +163,11 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
     public String getLocalNodeId() {
 	return localNode.getId();
     }
+    
+    private void gotoState(WsEndpointState newState) {
+	System.out.println("ws: "+state+" -> "+newState);
+	state=newState;
+    }
 
     @Override
     public void onAccepted() {
@@ -168,7 +177,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 	
 	/* then send the accepted event */
 	
-	state = ACCEPTED;
+	gotoState(ACCEPTED);
 	sendAuthenticated();
 	
 
@@ -189,7 +198,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 
     /* STATES */
 
-    public static WsServerEndpointState CONNECTED = new WsServerEndpointState() {
+    public static WsServerEndpointState CONNECTED = new WsServerEndpointState("CONNECTED") {
 
 	@Override
 	public void handleEvent(Event event, AbstractEventNodeWebsocketServerEndpoint wse) {
@@ -212,7 +221,7 @@ public abstract class AbstractEventNodeWebsocketServerEndpoint extends WsEndpoin
 	}
     };
 
-    public static WsServerEndpointState ACCEPTED = new WsServerEndpointState() {
+    public static WsServerEndpointState ACCEPTED = new WsServerEndpointState("ACCEPTED") {
 
 	@Override
 	public void handleEvent(Event event, AbstractEventNodeWebsocketServerEndpoint wse) {

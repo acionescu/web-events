@@ -33,6 +33,7 @@ import net.segoia.event.eventbus.peers.EventRelay;
 public abstract class WebsocketServerEventNode extends AgentNode {
 
     private AbstractEventNodeWebsocketServerEndpoint ws;
+    
 
     /**
      * Keep a separate bus to handle events coming from the ws client

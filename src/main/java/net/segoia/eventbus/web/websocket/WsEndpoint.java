@@ -91,7 +91,7 @@ public abstract class WsEndpoint {
 
 	try {
 	    session.close();
-	} catch (IOException e) {
+	} catch (Throwable e) {
 	    e.printStackTrace();
 	}
     }

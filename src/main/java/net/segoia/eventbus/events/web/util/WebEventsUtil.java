@@ -99,7 +99,7 @@ public class WebEventsUtil {
 	eh.addParam(URI, req.getRequestURI());
 
 	/* session */
-	eh.addParam(SESSION_ID, req.getSession().getId());
+	eh.addParam(SESSION_ID, req.getSession(true).getId());
 
 	String rsid = req.getRequestedSessionId();
 	if (rsid != null) {

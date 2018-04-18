@@ -88,7 +88,7 @@ public class ParallelClientWebsocketRelay extends EventRelay {
     @Override
     protected void sendEvent(Event event) {
 	/* we don't want to add this proxy as a relay */
-	peerRelay.onRemoteEvent(event);
+	transceiver.onRemoteEvent(event);
     }
     
     /**

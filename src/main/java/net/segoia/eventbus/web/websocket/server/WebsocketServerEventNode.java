@@ -18,7 +18,6 @@ package net.segoia.eventbus.web.websocket.server;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import net.segoia.event.conditions.TrueCondition;
 import net.segoia.event.eventbus.AsyncEventTracker;
@@ -26,7 +25,7 @@ import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventTracker;
 import net.segoia.event.eventbus.FilteringEventBus;
-import net.segoia.event.eventbus.SimpleEventDispatcher;
+import net.segoia.event.eventbus.BlockingEventDispatcher;
 import net.segoia.event.eventbus.peers.AgentNode;
 import net.segoia.event.eventbus.peers.DefaultEventRelay;
 import net.segoia.event.eventbus.peers.EventRelay;
@@ -120,7 +119,7 @@ public abstract class WebsocketServerEventNode extends AgentNode {
 	ws.terminate();
     }
 
-    class WebsocketServerNodeDispatcher extends SimpleEventDispatcher {
+    class WebsocketServerNodeDispatcher extends BlockingEventDispatcher {
 
 	/*
 	 * (non-Javadoc)

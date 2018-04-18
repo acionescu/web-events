@@ -17,9 +17,9 @@
 package net.segoia.eventbus.stats;
 
 import net.segoia.event.eventbus.EventContext;
-import net.segoia.event.eventbus.EventListener;
+import net.segoia.event.eventbus.EventContextListener;
 
-public class SimpleStats implements EventListener{
+public class SimpleStats implements EventContextListener{
     private long startTime=System.currentTimeMillis();
     private long eventsCount;
     private long lastEventTs;

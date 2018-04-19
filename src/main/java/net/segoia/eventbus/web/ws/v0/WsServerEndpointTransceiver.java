@@ -7,7 +7,7 @@ public class WsServerEndpointTransceiver extends EventNodeWsEndpointTransceiver{
     @Override
     protected void init() {
 	super.init();
-	/* for server endpoint init is start */
+	/* for the server endpoint init is start */
 	start();
     }
 

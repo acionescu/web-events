@@ -42,8 +42,15 @@ public class EventNodePeerManagerV0 extends PeerManager {
 		    pm.forwardToPeer(error);
 		    pm.terminate();
 		}
+		event.setHandled();
 	    });
-
+	    
+	    registerPeerEventProcessor((c)->{
+		if(!c.getEvent().isHandled()) {
+		    /* if the user sends an arbitrary unhandled event, then terminate the connection */
+		    c.getPeerManager().terminate();
+		}
+	    });
 	}
 
 	@Override

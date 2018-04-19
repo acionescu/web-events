@@ -55,6 +55,7 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 
     @OnClose
     public void onClose(CloseReason reason) {
+	System.out.println("closing ws "+reason.getReasonPhrase());
 	onPeerLeaving(new PeerLeavingReason(reason.getCloseCode().getCode(), reason.getReasonPhrase()));
     }
     

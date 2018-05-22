@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventHandle;
 import net.segoia.event.eventbus.builders.DefaultComponentEventBuilder;
+import net.segoia.event.eventbus.util.EBus;
 
 public class WebEventsUtil {
     public static String REQUEST = "REQUEST";
@@ -63,6 +64,10 @@ public class WebEventsUtil {
     public static String SERVER_NAME = "sname";
     public static String SERVER_PORT = "sport";
     public static String PROTOCOL="protocol";
+    
+    static {
+	EBus.initialize();
+    }
 
     public static EventHandle fromHttpRequest(HttpServletRequest req) {
 	EventHandle eh = eventBuilder.category(REQUEST).name(req.getMethod()).getHandle();

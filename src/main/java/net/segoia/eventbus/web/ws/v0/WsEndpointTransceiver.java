@@ -96,7 +96,9 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 
     @Override
     protected void init() {
+	session.setMaxBinaryMessageBufferSize(32000);
 	basicRemote = session.getBasicRemote();
+	
     }
     
     protected abstract void handleError(Throwable t);

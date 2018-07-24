@@ -34,11 +34,13 @@ public class WsServerEndpointTransceiver extends EventNodeWsEndpointTransceiver{
 
     @Override
     protected void handleError(Throwable t) {
+	System.out.println("WS error: "+t.getMessage());
 	t.printStackTrace();
     }
 
     @Override
     protected void handleSendError(Throwable t) {
+	System.out.println("WS send error: "+t.getMessage());
 	t.printStackTrace();
     }
 

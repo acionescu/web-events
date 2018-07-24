@@ -43,14 +43,12 @@ public class WsClientEndpointTransceiver extends WsEndpointTransceiver {
 
     @Override
     protected void handleError(Throwable t) {
-	// TODO Auto-generated method stub
-
+	t.printStackTrace();
     }
 
     @Override
     protected void handleSendError(Throwable t) {
-	// TODO Auto-generated method stub
-
+	t.printStackTrace();
     }
 
     protected void doConnect() {

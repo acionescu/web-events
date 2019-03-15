@@ -41,7 +41,7 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
     /**
      * We will use a fixed thread pool to send events to all websocket connected peers
      */
-    private static ScheduledExecutorService sendThreadPool = Executors.newScheduledThreadPool(10, new ThreadFactory() {
+    private static ScheduledExecutorService sendThreadPool = Executors.newScheduledThreadPool(30, new ThreadFactory() {
 
 	@Override
 	public Thread newThread(Runnable r) {

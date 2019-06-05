@@ -3,7 +3,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>net.segoia</groupId>
    <artifactId>web-events</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>0.0.2-SNAPSHOT</version>
    <name>web-events</name>
    <description>An event-bus extension for events transmission over websockets</description>
    <url>https://github.com/acionescu/web-events</url>
@@ -136,7 +136,7 @@
       <dependency>
          <groupId>net.segoia</groupId>
          <artifactId>event-bus</artifactId>
-         <version>0.0.1-SNAPSHOT</version>
+         <version>0.0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>javax.servlet</groupId>

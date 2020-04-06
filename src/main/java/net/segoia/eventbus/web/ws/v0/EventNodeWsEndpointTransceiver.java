@@ -30,4 +30,10 @@ public abstract class EventNodeWsEndpointTransceiver extends WsEndpointTransceiv
         this.eventNode = eventNode;
     }
     
+    public String getLocalNodeId() {
+	if(eventNode != null) {
+	    return eventNode.getId();
+	}
+	return null;
+    }
 }

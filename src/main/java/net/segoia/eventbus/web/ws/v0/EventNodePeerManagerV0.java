@@ -42,6 +42,11 @@ public class EventNodePeerManagerV0 extends PeerManager {
 	goToState(CONNECTED);
     }
 
+    protected void startInClientMode() {
+	setAcceptedState(CLIENT_ACCEPTED);
+	goToState(CLIENT_CONNECT);
+    }
+
     public static PeerManagerState CONNECTED = new PeerManagerState() {
 
 	@Override
@@ -60,9 +65,9 @@ public class EventNodePeerManagerV0 extends PeerManager {
 		}
 		event.setHandled();
 	    });
-	    
-	    registerPeerEventProcessor((c)->{
-		if(!c.getEvent().isHandled()) {
+
+	    registerPeerEventProcessor((c) -> {
+		if (!c.getEvent().isHandled()) {
 		    /* if the user sends an arbitrary unhandled event, then terminate the connection */
 		    c.getPeerManager().terminate();
 		}
@@ -123,4 +128,103 @@ public class EventNodePeerManagerV0 extends PeerManager {
 	}
     };
 
+    /* client */
+
+    public static PeerManagerState CLIENT_CONNECT = new PeerManagerState() {
+
+	@Override
+	public void onEnterState(PeerManager peerManager) {
+	    peerManager.getPeerContext().getRelay().start();
+	}
+
+	@Override
+	public void onExitState(PeerManager peerManager) {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void registerLocalEventHandlers() {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void registerPeerEventHandlers() {
+	    registerPeerEventProcessor("EBUS:PEER:CONNECTED", (c) -> {
+		Event event = c.getEvent();
+		PeerManager peerManager = c.getPeerManager();
+		Event authReq = Events.builder().ebus().peer().auth().build();
+		authReq.addParam(EventParams.clientId, event.getParam(EventParams.clientId));
+		
+		peerManager.goToState(CLIENT_CONNECTED);
+		peerManager.forwardToPeer(authReq);
+		event.setHandled();
+		
+	    });
+
+	}
+
+    };
+
+    public static PeerManagerState CLIENT_CONNECTED = new PeerManagerState() {
+
+	@Override
+	public void onEnterState(PeerManager peerManager) {
+
+	}
+
+	@Override
+	public void onExitState(PeerManager peerManager) {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void registerLocalEventHandlers() {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void registerPeerEventHandlers() {
+	    registerPeerEventProcessor("EBUS:PEER:AUTHENTICATED", (c) -> {
+		PeerManager pm = c.getPeerManager();
+		pm.onReady();
+		c.getEvent().setHandled();
+	    });
+	}
+    };
+    
+    public static PeerManagerState CLIENT_ACCEPTED = new PeerManagerState() {
+
+	@Override
+	public <E extends Event> boolean handleEventFromPeer(PeerEventContext<E> ec) {
+	    ec.getPeerManager().postEvent(ec.getEvent());
+	    return true;
+	}
+
+	@Override
+	protected void registerPeerEventHandlers() {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	protected void registerLocalEventHandlers() {
+
+	}
+
+	@Override
+	public void onExitState(PeerManager peerManager) {
+	    // TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onEnterState(PeerManager peerManager) {
+	    
+
+	}
+    };
 }

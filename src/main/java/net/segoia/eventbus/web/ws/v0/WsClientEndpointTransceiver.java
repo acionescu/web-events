@@ -17,11 +17,14 @@
 package net.segoia.eventbus.web.ws.v0;
 
 import java.net.URI;
+import java.util.concurrent.Callable;
 
+import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
 
-public class WsClientEndpointTransceiver extends WsEndpointTransceiver {
+@ClientEndpoint
+public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver {
     private boolean autoReconnect = true;
 
     /**
@@ -30,11 +33,23 @@ public class WsClientEndpointTransceiver extends WsEndpointTransceiver {
     private long reconnectDelay = 60000;
 
     private URI uri;
+    
+    private String channel;
 
     public WsClientEndpointTransceiver(URI uri) {
 	super();
 	this.uri = uri;
     }
+    
+    
+
+    public WsClientEndpointTransceiver(URI uri, String channel) {
+	super();
+	this.uri = uri;
+	this.channel = channel;
+    }
+
+
 
     @Override
     public void start() {
@@ -55,22 +70,35 @@ public class WsClientEndpointTransceiver extends WsEndpointTransceiver {
 	WebSocketContainer wsContainer = ContainerProvider.getWebSocketContainer();
 	try {
 	    wsContainer.connectToServer(this, uri);
+	    
 	} catch (Exception e) {
 	    handleError(e);
 
-//	    if (autoReconnect) {
-//		scheduleTask(new Callable<Void>() {
-//
-//		    @Override
-//		    public Void call() throws Exception {
-//			System.out.println(getLocalNodeId() + " trying to reconnect to " + uri);
-//			doConnect();
-//			return null;
-//		    }
-//		}, reconnectDelay);
-//	    }
+	    if (autoReconnect) {
+		scheduleTask(new Callable<Void>() {
+
+		    @Override
+		    public Void call() throws Exception {
+			System.out.println(getLocalNodeId() + " trying to reconnect to " + uri);
+			doConnect();
+			return null;
+		    }
+		}, reconnectDelay);
+	    }
 	}
     }
+    
+    
+
+    @Override
+    public String getChannel() {
+	if(channel != null) {
+	    return channel;
+	}
+	return super.getChannel();
+    }
+
+
 
     public boolean isAutoReconnect() {
 	return autoReconnect;

@@ -19,12 +19,17 @@ package net.segoia.eventbus.web.ws.v0;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.CloseReason;
+import javax.websocket.CloseReason.CloseCode;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -34,9 +39,14 @@ import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
 import net.segoia.event.eventbus.peers.core.AbstractEventTransceiver;
+import net.segoia.event.eventbus.peers.events.ClosePeerEvent;
+import net.segoia.event.eventbus.peers.events.bind.PeerBindRejectedEvent;
+import net.segoia.event.eventbus.peers.vo.ClosePeerData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
+import net.segoia.event.eventbus.peers.vo.bind.PeerBindRejected;
 
 public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
+    private static Map<String, CloseReason.CloseCode> closeEventsCodes=new HashMap<>();
 
     /**
      * We will use a fixed thread pool to send events to all websocket connected peers
@@ -50,6 +60,11 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 	    return th;
 	}
     });
+    
+    
+    static {
+	closeEventsCodes.put(PeerBindRejectedEvent.ET, CloseReason.CloseCodes.CANNOT_ACCEPT);
+    }
 
     protected Session session;
     protected EndpointConfig config;
@@ -93,10 +108,43 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 	    e.printStackTrace();
 	}
     }
+    
+    private void terminate(CloseReason closeReason) {
+	if(closeReason == null) {
+	    terminate();
+	    return;
+	}
+	if (!session.isOpen()) {
+	    return;
+	}
+
+	try {
+	    session.close(closeReason);
+	} catch (Throwable e) {
+	    e.printStackTrace();
+	}
+    }
+
+    @Override
+    public void terminate(ClosePeerEvent closeEvent) {
+	if(closeEvent != null) {
+	    CloseCode closeCode = closeEventsCodes.get(closeEvent.getEt());
+	    if(closeCode != null) {
+		ClosePeerData data = closeEvent.getData();
+		if(data != null) {
+		    String message = data.getMessage();
+		    terminate(new CloseReason(closeCode, message));
+		    return;
+		}
+		
+	    }
+	}
+	terminate();
+    }
 
     @Override
     protected void init() {
-	session.setMaxBinaryMessageBufferSize(32000);
+	session.setMaxBinaryMessageBufferSize(128000);
 	basicRemote = session.getBasicRemote();
 	
     }
@@ -136,5 +184,14 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 	}
 	return null;
     }
+    
+    protected Future<Void> submitTask(Callable<Void> task){
+	return sendThreadPool.submit(task);
+    }
+    
+    protected Future<Void> scheduleTask(Callable<Void> task, long delay){
+	return sendThreadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
+    }
+
 
 }

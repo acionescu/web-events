@@ -13,8 +13,11 @@ import net.segoia.event.eventbus.peers.events.bind.PeerBindRequestEvent;
 import net.segoia.event.eventbus.peers.vo.PeerData;
 import net.segoia.eventbus.events.web.util.WebEventsUtil;
 import net.segoia.eventbus.stats.SimpleStats;
+import net.segoia.util.logging.Logger;
+import net.segoia.util.logging.MasterLogManager;
 
 public abstract class ServerWsEndpointV0 extends WsServerEndpointTransceiver {
+    private static Logger logger = MasterLogManager.getLogger(ServerWsEndpointV0.class.getSimpleName());
     /**
      * Keep a reference to the http session as well to extract client info
      */
@@ -75,9 +78,10 @@ public abstract class ServerWsEndpointV0 extends WsServerEndpointTransceiver {
     public void receiveData(PeerDataEvent dataEvent) {
 	/* make sure we're not exceeding allowed activity level */
 	stats.onEvent(new EventContext(dataEvent, null));
-	System.out.println("Activity index: " + stats.getActivityIndex());
-	if (stats.getActivityIndex() > maxAllowedActivity) {
-	    System.out.println(this + " terminating due to exceeded activity threshold");
+	float activityIndex = stats.getActivityIndex();
+	logger.debug("Activity index: " + activityIndex);
+	if (activityIndex > maxAllowedActivity) {
+	    logger.warn(this + " terminating due to exceeded activity threshold: "+activityIndex);
 	    terminate();
 	    return;
 	}

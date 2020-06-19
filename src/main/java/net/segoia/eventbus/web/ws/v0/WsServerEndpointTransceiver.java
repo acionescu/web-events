@@ -17,9 +17,11 @@
 package net.segoia.eventbus.web.ws.v0;
 
 import net.segoia.event.eventbus.PeerBindRequest;
+import net.segoia.util.logging.Logger;
+import net.segoia.util.logging.MasterLogManager;
 
 public class WsServerEndpointTransceiver extends EventNodeWsEndpointTransceiver{
-
+    private static Logger logger = MasterLogManager.getLogger(WsServerEndpointTransceiver.class.getSimpleName());
     @Override
     protected void init() {
 	super.init();
@@ -34,14 +36,14 @@ public class WsServerEndpointTransceiver extends EventNodeWsEndpointTransceiver{
 
     @Override
     protected void handleError(Throwable t) {
-	System.out.println("WS error: "+t.getMessage());
-	t.printStackTrace();
+	logger.error("WS error: "+t.getMessage(),t);
+//	t.printStackTrace();
     }
 
     @Override
     protected void handleSendError(Throwable t) {
-	System.out.println("WS send error: "+t.getMessage());
-	t.printStackTrace();
+	logger.error("WS send error: "+t.getMessage(),t);
+//	t.printStackTrace();
     }
 
 }

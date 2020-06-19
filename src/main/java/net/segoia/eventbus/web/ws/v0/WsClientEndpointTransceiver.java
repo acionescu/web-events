@@ -23,8 +23,12 @@ import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
 
+import net.segoia.util.logging.Logger;
+import net.segoia.util.logging.MasterLogManager;
+
 @ClientEndpoint
 public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver {
+    private static Logger logger = MasterLogManager.getLogger(WsClientEndpointTransceiver.class.getSimpleName());
     private boolean autoReconnect = true;
 
     /**
@@ -79,7 +83,7 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
 
 		    @Override
 		    public Void call() throws Exception {
-			System.out.println(getLocalNodeId() + " trying to reconnect to " + uri);
+			logger.info(getLocalNodeId() + " trying to reconnect to " + uri);
 			doConnect();
 			return null;
 		    }

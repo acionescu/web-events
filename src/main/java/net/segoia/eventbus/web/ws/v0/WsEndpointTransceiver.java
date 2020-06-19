@@ -43,9 +43,11 @@ import net.segoia.event.eventbus.peers.events.ClosePeerEvent;
 import net.segoia.event.eventbus.peers.events.bind.PeerBindRejectedEvent;
 import net.segoia.event.eventbus.peers.vo.ClosePeerData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
-import net.segoia.event.eventbus.peers.vo.bind.PeerBindRejected;
+import net.segoia.util.logging.Logger;
+import net.segoia.util.logging.MasterLogManager;
 
 public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
+    private static Logger logger = MasterLogManager.getLogger(WsEndpointTransceiver.class.getSimpleName());
     private static Map<String, CloseReason.CloseCode> closeEventsCodes=new HashMap<>();
 
     /**
@@ -86,7 +88,7 @@ public abstract class WsEndpointTransceiver extends AbstractEventTransceiver {
 
     @OnClose
     public void onClose(CloseReason reason) {
-	System.out.println("closing ws "+reason.getReasonPhrase());
+	logger.info(this+" closing ws "+reason.getReasonPhrase());
 	onPeerLeaving(new PeerLeavingReason(reason.getCloseCode().getCode(), reason.getReasonPhrase()));
     }
     

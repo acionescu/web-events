@@ -18,11 +18,16 @@ package net.segoia.eventbus.web.ws.v0;
 
 import java.net.URI;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
 
+import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.peers.core.PeerDataEvent;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
+import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 import net.segoia.util.logging.Logger;
 import net.segoia.util.logging.MasterLogManager;
 
@@ -34,18 +39,22 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
     /**
      * Wait this amount of time between reconnect attempts
      */
-    private long reconnectDelay = 60000;
+    private long reconnectDelay = 10000;
 
     private URI uri;
-    
+
     private String channel;
+
+    private Event rootEvent;
+
+    private Future<Void> reconnectFuture;
+
+    private boolean connected;
 
     public WsClientEndpointTransceiver(URI uri) {
 	super();
 	this.uri = uri;
     }
-    
-    
 
     public WsClientEndpointTransceiver(URI uri, String channel) {
 	super();
@@ -53,16 +62,49 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
 	this.channel = channel;
     }
 
+    @Override
+    protected void init() {
+	super.init();
+	rootEvent = new Event("PEER:CONNECT:EVENT").addParam("uri", uri).addParam("channel", channel);
+	/* this is called when socket is open - connectio succeeds */
 
+	if (reconnectFuture != null) {
+	    reconnectFuture.cancel(true);
+	    reconnectFuture = null;
+	}
+
+	connected = true;
+    }
+
+    @Override
+    public void receiveData(PeerDataEvent dataEvent) {
+	rootEvent.setAsCauseFor(dataEvent);
+	super.receiveData(dataEvent);
+    }
 
     @Override
     public void start() {
 	doConnect();
     }
 
-    @Override
-    protected void handleError(Throwable t) {
+    protected void handleConnectError(Throwable t) {
 	t.printStackTrace();
+
+	doReconnect();
+
+    }
+
+    private void doReconnect() {
+	if (autoReconnect && !connected) {
+	    reconnectFuture = scheduleReconnect();
+	}
+    }
+
+    @Override
+    public void onPeerLeaving(PeerLeavingReason reason) {
+	super.onPeerLeaving(reason);
+	connected = false;
+//	doReconnect();
     }
 
     @Override
@@ -74,35 +116,36 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
 	WebSocketContainer wsContainer = ContainerProvider.getWebSocketContainer();
 	try {
 	    wsContainer.connectToServer(this, uri);
-	    
 	} catch (Exception e) {
-	    handleError(e);
-
-	    if (autoReconnect) {
-		scheduleTask(new Callable<Void>() {
-
-		    @Override
-		    public Void call() throws Exception {
-			logger.info(getLocalNodeId() + " trying to reconnect to " + uri);
-			doConnect();
-			return null;
-		    }
-		}, reconnectDelay);
-	    }
+	    handleConnectError(e);
 	}
     }
-    
-    
+
+    @Override
+    public void onPeerError(PeerErrorData errorData) {
+	// TODO Auto-generated method stub
+	super.onPeerError(errorData);
+    }
+
+    protected Future<Void> scheduleReconnect() {
+	return scheduleTask(new Callable<Void>() {
+
+	    @Override
+	    public Void call() throws Exception {
+		logger.info(getLocalNodeId() + " trying to reconnect to " + uri);
+		doConnect();
+		return null;
+	    }
+	}, reconnectDelay);
+    }
 
     @Override
     public String getChannel() {
-	if(channel != null) {
+	if (channel != null) {
 	    return channel;
 	}
 	return super.getChannel();
     }
-
-
 
     public boolean isAutoReconnect() {
 	return autoReconnect;
@@ -126,6 +169,11 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
 
     public void setUri(URI uri) {
 	this.uri = uri;
+    }
+
+    @Override
+    protected void handleError(Throwable t) {
+	t.printStackTrace();
     }
 
 }

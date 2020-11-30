@@ -88,7 +88,6 @@ public class WsClientEndpointTransceiver extends EventNodeWsEndpointTransceiver 
     }
 
     protected void handleConnectError(Throwable t) {
-	t.printStackTrace();
 
 	doReconnect();
 

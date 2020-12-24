@@ -53,8 +53,9 @@ public abstract class ServerWsEndpointV0 extends WsServerEndpointTransceiver {
 
 	super.init();
 	/* increase maximum message buffer */
-	session.setMaxBinaryMessageBufferSize(128000);
-
+//	session.setMaxBinaryMessageBufferSize(512000);
+//	session.setMaxTextMessageBufferSize(512000);
+	System.out.println("initialized server endpoint with buffer size "+session.getMaxBinaryMessageBufferSize());
     }
 
     @Override
@@ -95,7 +96,7 @@ public abstract class ServerWsEndpointV0 extends WsServerEndpointTransceiver {
 	/* make sure we're not exceeding allowed activity level */
 	stats.onEvent(new EventContext(dataEvent));
 	float activityIndex = stats.getActivityIndex();
-	logger.debug("Activity index: " + activityIndex);
+//	logger.debug("Activity index: " + activityIndex);
 	if (activityIndex > maxAllowedActivity) {
 	    logger.warn(this + " terminating due to exceeded activity threshold: "+activityIndex);
 	    terminate();

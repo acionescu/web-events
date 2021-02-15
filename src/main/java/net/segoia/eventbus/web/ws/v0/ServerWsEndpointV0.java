@@ -50,7 +50,7 @@ public abstract class ServerWsEndpointV0 extends WsServerEndpointTransceiver {
 	initEventNode();
 	/* get the http session reference */
 	this.httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-
+	
 	super.init();
 	/* increase maximum message buffer */
 //	session.setMaxBinaryMessageBufferSize(512000);

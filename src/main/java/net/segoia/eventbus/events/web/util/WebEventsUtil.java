@@ -65,6 +65,17 @@ public class WebEventsUtil {
     public static String SERVER_PORT = "sport";
     public static String PROTOCOL="protocol";
     
+    /**
+     * The uri after the servlet path
+     */
+    public static String PATH_INFO="pathInfo";
+    
+    public static String SERVLET_PATH="servletPath";
+    
+    public static String PATH_INFO_ARRAY="pathInfoArray";
+    
+    public static String BASE_URL="baseURL";
+    
     static {
 	EBus.initialize();
     }
@@ -126,7 +137,7 @@ public class WebEventsUtil {
 	eh.addParam(SERVER_PORT, req.getServerPort());
 	
 	eh.addParam(PROTOCOL, req.getProtocol());
-
+	
 	/* add this event on the request */
 	req.setAttribute(ROOT_EVENT, eh.event());
 

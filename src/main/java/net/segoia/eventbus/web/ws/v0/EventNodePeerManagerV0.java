@@ -16,9 +16,6 @@
  */
 package net.segoia.eventbus.web.ws.v0;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.constants.ErrorEvents;
@@ -28,9 +25,12 @@ import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
+import net.segoia.event.eventbus.peers.PeerManagerConfig;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
+import net.segoia.event.eventbus.peers.vo.ErrorData;
 import net.segoia.event.eventbus.vo.security.SessionAuthContext;
+import net.segoia.event.eventbus.vo.security.UserAuthProfile;
 import net.segoia.eventbus.web.websocket.server.AuthError;
 import net.segoia.eventbus.web.websocket.server.AuthRequiredData;
 
@@ -72,8 +72,18 @@ public class EventNodePeerManagerV0 extends PeerManager {
 
 		}
 
-		Condition peerAuthCondition = pm.getConfig().getPeerAuthCondition();
-		if (peerAuthCondition != null) {
+		PeerManagerConfig pmConfig = pm.getConfig();
+		Condition peerAuthCondition = pmConfig.getPeerAuthCondition();
+		
+		boolean doAuth=false;
+		
+		if(peerAuthCondition != null) {
+		    /* we do auth if it is required or the auth data is set */
+		    doAuth=pmConfig.isAuthRequired() || (event.getParam(peerAuthCondition.getParamsObjName()) != null);
+		}
+		
+		
+		if (doAuth) {
 
 		    Event rootEvent = event.getHeader().getRootEvent();
 
@@ -91,8 +101,15 @@ public class EventNodePeerManagerV0 extends PeerManager {
 			if (!peerAuthCondition.test(c)) {
 			    /* if an auth condition is specified and it fails, send an auth error */
 			    error = Events.builder().peer().error().auth().build();
-			    error.addParam(EventParams.reason, ErrorEvents.SIMPLE_AUTH_ERROR);
+			    
 
+			    ErrorData errorData = c.getLocalData(ErrorData.class);
+			    if(errorData != null) {
+				error.addParam(EventParams.reason, errorData);
+			    }
+			    else {
+				error.addParam(EventParams.reason, ErrorEvents.SIMPLE_AUTH_ERROR);
+			    }
 			} else {
 			    /* auth successful, add an auth session context */
 
@@ -101,19 +118,27 @@ public class EventNodePeerManagerV0 extends PeerManager {
 				sessionAuthContext = new SessionAuthContext();
 				/* add the context as root event header param */
 				rootEvent.addHeaderParam(EventConstants.AUTH_SESSION, sessionAuthContext);
+				
+				sessionAuthContext.setUserAuthProfile(c.getLocalData(UserAuthProfile.class));
 			    }
 			    /* add this condition on the context */
 			    sessionAuthContext.addAuthCondition(peerAuthCondition);
 
 			}
-
+		    }
+		    
+		    if(error == null && sessionAuthContext != null) {
+			 /* save auth profile on peer context */
+			 pm.getPeerContext().setUserAuthProfile(sessionAuthContext.getUserAuthProfile());
 		    }
 		}
 
 		if (error != null) {
 		    pm.forwardToPeer(error);
-		    pm.terminate();
+		    pm.rejectBind("Auth failed");
 		} else {
+		   
+		    
 		    pm.onReady();
 		}
 
@@ -145,16 +170,25 @@ public class EventNodePeerManagerV0 extends PeerManager {
 	    Event connectedEvent = Events.builder().ebus().peer().connected().build();
 	    connectedEvent.addParam(EventParams.clientId, peerManager.getPeerId());
 
-	    Condition peerAuthCondition = peerManager.getConfig().getPeerAuthCondition();
+	    PeerManagerConfig peerManagerConfig = peerManager.getConfig();
+	    Condition peerAuthCondition = peerManagerConfig.getPeerAuthCondition();
 	    
 	    if (peerAuthCondition != null) {
 		Event rootEvent = peerManager.getPeerContext().getCauseEvent().getHeader().getRootEvent();
 		SessionAuthContext authSessionContext = (SessionAuthContext) rootEvent
 			.getHeaderParam(EventConstants.AUTH_SESSION);
 		if (authSessionContext == null || !authSessionContext.isVerified(peerAuthCondition)) {
-		    /* add an auth required param */
-		    List<String> requiredParamsNames = new ArrayList<>(peerAuthCondition.getRequiredParamsNames());
-		    connectedEvent.addParam(EventParams.authRequired, new AuthRequiredData(requiredParamsNames));
+		    
+		    AuthRequiredData authReqData = new AuthRequiredData(peerAuthCondition.getRequiredParams(), peerAuthCondition.getParamsObjName());
+		    
+		    if(peerManagerConfig.isAuthRequired()) {
+		    /* add an auth required params */
+			connectedEvent.addParam(EventParams.authRequired, authReqData);
+		    }
+		    else {
+			/* just set an auth supported */
+			connectedEvent.addParam(EventParams.authSupported, authReqData);
+		    }
 		}
 		else {
 		    if(authSessionContext != null) {
@@ -194,7 +228,11 @@ public class EventNodePeerManagerV0 extends PeerManager {
 
 	@Override
 	public void onEnterState(PeerManager peerManager) {
+	    PeerContext peerContext = peerManager.getPeerContext();
+	    
 	    Event event = Events.builder().ebus().peer().authenticated().build();
+	    event.addParam("authProfile", peerContext.getUserAuthProfile());
+	    
 	    peerManager.forwardToPeer(event);
 
 	}

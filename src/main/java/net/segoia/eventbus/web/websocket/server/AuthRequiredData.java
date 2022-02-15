@@ -18,10 +18,19 @@ package net.segoia.eventbus.web.websocket.server;
 
 import java.util.List;
 
-public class AuthRequiredData {
-    private List<String> params;
+import net.segoia.event.conditions.ConditionParam;
 
-    public AuthRequiredData(List<String> params) {
+public class AuthRequiredData {
+    private List<ConditionParam> params;
+    private String paramsNamespace;
+
+    public AuthRequiredData(List<ConditionParam> params, String paramsNamespace) {
+	super();
+	this.params = params;
+	this.paramsNamespace = paramsNamespace;
+    }
+
+    public AuthRequiredData(List<ConditionParam> params) {
 	super();
 	this.params = params;
     }
@@ -31,12 +40,20 @@ public class AuthRequiredData {
 	// TODO Auto-generated constructor stub
     }
 
-    public List<String> getParams() {
+    public List<ConditionParam> getParams() {
 	return params;
     }
 
-    public void setParams(List<String> params) {
+    public void setParams(List<ConditionParam> params) {
 	this.params = params;
+    }
+
+    public String getParamsNamespace() {
+	return paramsNamespace;
+    }
+
+    public void setParamsNamespace(String paramsNamespace) {
+	this.paramsNamespace = paramsNamespace;
     }
 
 }
